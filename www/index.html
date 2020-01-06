@@ -1,0 +1,264 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+	<meta http-equiv="Content-Security-Policy" content="default-src * data: gap: https://ssl.gstatic.com; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
+	<script src="components/loader.js"></script>
+	<script src="lib/onsenui/js/onsenui.min.js"></script>
+	<link rel="stylesheet" href="components/loader.css">
+	<link rel="stylesheet" href="lib/onsenui/css/onsenui.css">
+	<link rel="stylesheet" href="lib/onsenui/css/onsen-css-components.css">
+	<link rel="stylesheet" href="css/style.css">
+	<script src="keys.js"></script>
+
+	<script>
+		var ncmb = new NCMB(appKey,clientKey);
+    var myData = ncmb.DataStore("TimeStore");
+    var Time1 = "Monday";
+    var Time2 = "Tuesday";
+    var Time3 = "Wednesday";
+    var Time4 = "Thusday";
+    var Time5 = "Friday";
+    var Time6 = "Saturday";
+    var Time7 = "Sunday";
+    var Times = [Time1,Time2,Time3,Time4,Time5,Time6,Time7];
+		// Page init event
+
+    function add(){
+      var MyData = new myData();
+      var setTime1 = $("#Monday2").val() - $("#Monday").val();
+      var setTime2 = $("#Tuesday2").val() - $("#Tuesday").val();
+      var setTime3 = $("#Wednesday2").val() - $("#Wednesday").val();
+      var setTime4 = $("#Thusday2").val() - $("#Thusday").val();
+      var setTime5 = $("#Friday2").val() - $("#Friday").val();
+      var setTime6 = $("#Saturday2").val() - $("#Saturday").val();
+      var setTime7 = $("#Sunday2").val() - $("#Sunday").val();
+      var setTimes = [setTime1,setTime2,setTime3,setTime4,setTime5,setTime6,setTime7];
+      
+      for(var i=0;i<7;i++){
+        MyData.set(Times[i],setTimes[i]);
+      }
+
+      MyData.save().then(function(results){
+        var SUM = 0;
+        for (var i=0;i<setTimes.length;i++){
+            SUM+=setTimes[i];
+        }
+        if(SUM>28){
+          $("#display").html("your next week's hour is out off 28 hours.  please check your schedule again and make sure is not out off 28 hours");
+          MyData.delete();
+        }else{
+        $("#display").html("enter success" + " your total hour your next week is: " + SUM);
+        }
+      }).catch(function(err){
+        $("#display").html("false to enter information");
+      });
+   }
+    
+    function random(){
+      var sum2 = 0;
+      var MyData = new myData();
+      var n = 8;
+      var sum = 0;
+      var numberDone = [];
+      numberDone.length = 7;
+      var randomDays = $("#DayNumbers").val();
+      var dayRandom = [];
+      dayRandom.length = randomDays;
+      var randomNumber = Math.floor(Math.random()*n);
+      numberDone[0] = randomNumber;
+      sum = numberDone[0];
+        for(var i=0;i<dayRandom.length;i++){
+          if(sum < 28){
+            numberDone[i]=Math.floor(Math.random()*n);
+            sum+=numberDone[i];
+               if(sum>28){
+                for(var j=0;j<dayRandom.length;j++){
+                  if(numberDone[j]>numberDone[j+1]){
+                  var m = numberDone[j];
+                  numberDone[j] = numberDone[j+1];
+                  numberDone[j+1] = m;
+                    }
+                    numberDone[j+1]=0;
+                  }
+                }               
+          } 
+            MyData.set(Times[i],numberDone[i]);
+        }
+            MyData.save().then(function(results){
+              $("#display").html("save success");
+            }).catch(function(err){
+              $("#display").html("save false");
+            });    
+    }
+
+    function fetch(){
+        var SUM = 0;
+        var tbl = document.getElementById("myTable");
+        var checks = document.getElementById("checks");
+        var str = "";
+        myData.fetch().then(function(results){
+        var day1 = results.get("Monday");
+        var day2 = results.get("Tuesday");
+        var day3 = results.get("Wednesday");
+        var day4 = results.get("Thusday");
+        var day5 = results.get("Friday");
+        var day6 = results.get("Saturday");
+        var day7 = results.get("Sunday");
+        var days = [day1,day2,day3,day4,day5,day6,day7];
+
+        for(var j = 0;j<days.length;j++){
+          $("#day"+j).html(days[j]);
+            if(days[j]!=null){
+                 SUM+=days[j];
+            }
+        }
+          $("#display2").html("This is your next week's schedule. Your next week's hours are " + SUM);
+          $("#display3").html(str);
+      }).catch(function(err){
+          $("#display2").html("You must add your schedule first. Press OK button to return Information add Page!!!");
+      }) 
+    }
+
+    function deleteData(){
+      myData.fetch().then(function(MyData){
+        return MyData.delete();
+      }).then(function(results){
+        $("#display2").html("Delete success");
+      }).catch(function(err){
+        $("#display2").html("delete false");
+      });
+    }
+
+
+
+
+    document.addEventListener('init', function(event) {
+      var page = event.target;  
+      if (page.matches('#first-page')) {
+        page.querySelector('#check-button').onclick = function() {
+          document.querySelector('#navigator').pushPage('page2.html');
+        };
+      } else if (page.matches('#second-page')) {
+        page.querySelector('#pop-button').onclick = function() {
+          document.querySelector('#navigator').popPage();
+        };
+      }
+    });
+
+    if (ons.platform.isIPhoneX()) {
+      document.documentElement.setAttribute('onsflag-iphonex-portrait', '');
+      document.documentElement.setAttribute('onsflag-iphonex-landscape', '');
+    }
+	</script>
+</head>
+
+<body>
+	<ons-navigator id="navigator" page="page1.html"></ons-navigator>
+	<ons-template id="page1.html">
+		<ons-page id="first-page">
+			<ons-toolbar>
+				<div class="center">Infomation add</div>
+			</ons-toolbar>
+			<div class="content" style="text-align: left">
+				<center><b> Enter the time you can come to work down here ↓↓↓↓↓: </b></center>
+				</br>
+				<label>Monday: </label>
+				<input id="Monday" type="number" min="1" max="24" placeholder="Enter time.."> to
+				<input id="Monday2" type="number" min="1" max="24" placeholder="Enter time..">
+				</br>
+				<label>Tuesday: </label>
+				<input id="Tuesday" type="number" min="1" max="24" placeholder="Enter time.."> to
+				<input id="Tuesday2" type="number" min="1" max="24" placeholder="Enter time..">
+				</br>
+				<label>Wednesday: </label>
+				<input id="Wednesday" type="number" min="1" max="24" placeholder="Enter time.."> to
+				<input id="Wednesday2" type="number" min="1" max="24" placeholder="Enter time..">
+				</br>
+				<label>Thusday: </label>
+				<input id="Thusday" type="number" min="1" max="24" placeholder="Enter time.."> to
+				<input id="Thusday2" type="number" min="1" max="24" placeholder="Enter time..">
+				</br>
+				<label>Friday: </label>
+				<input id="Friday" type="number" min="1" max="24" placeholder="Enter time.."> to
+				<input id="Friday2" type="number" min="1" max="24" placeholder="Enter time..">
+				</br>
+				<label>Saturday: </label>
+				<input id="Saturday" type="number" min="1" max="24" placeholder="Enter time.."> to
+				<input id="Saturday2" type="number" min="1" max="24" placeholder="Enter time..">
+				</br>
+				<label>Sunday: </label>
+				<input id="Sunday" type="number" min="1" max="24" placeholder="Enter time.."> to
+				<input id="Sunday2" type="number" min="1" max="24" placeholder="Enter time..">
+				</br>
+				<b><i><center>If you want to random your schedule please enter the number of the day you want to go to work</center></i></b>
+				</br>
+				<input id="DayNumbers" type="number" min="2" max="7" placeholder="Enter number...">
+				</br>
+				<button class="btn" onclick="add()">Add</button>
+				<button class="btnR" onclick="random()"> Random</button>
+				<ons-button id="check-button" class="btnR">Check</ons-button>
+        <hr>
+				<div id="display" style="margin:15px auto;" class="container">
+					results
+				</div>
+		</ons-page>
+	</ons-template>
+
+	<ons-template id="page2.html">
+		<ons-page id="second-page">
+			<ons-toolbar>
+				<div class="left">
+					<ons-back-button>Back</ons-back-button>
+				</div>
+				<div class="center">Check Time Page</div>
+			</ons-toolbar>
+
+			<div class="content" style="text-align: center">
+				<p>
+					<b>This is the schedule of next week: 
+          </b>
+					<br> please follow the schedule had been built and don't be late!!!
+					</br>
+				</p>
+				<br>
+				<table border="3" id="myTable">
+					<tr>
+						<td>Mon</td>
+						<td>Tues</td>
+						<td>Wed</td>
+						<td>Thus</td>
+						<td>Fri</td>
+						<td>Sat</td>
+						<td>Sun</td>
+					</tr>
+					<tr>
+		
+            <td id="day0">0</td>
+						<td id="day1">0</td>
+						<td id="day2">0</td>
+						<td id="day3">0</td>
+						<td id="day4">0</td>
+						<td id="day5">0</td>
+						<td id="day6">0</td>
+
+					</tr>
+				</table>
+				</br>
+				<div>
+					<div id="display2" style="margin:15px auto;" class="container">
+						results
+					</div>
+
+					<ons-button id="pop-button" class="btnB">OK</ons-button>
+					<button class="btnB" onclick="fetch()">Show </button>
+					<button class="btnB" onclick="deleteData()">Delete</button>
+				</div>
+        <hr>
+		</ons-page>
+	</ons-template>
+</body>
+
+</html>
